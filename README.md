@@ -1,6 +1,7 @@
 Debian Package Dependencies Terminator
 ==================
 
+![screenshot](runtime.png)
 Purpose
 ----
 The purpose of this tool is to get all the dependencies for offline installation of debian packages.
@@ -8,7 +9,7 @@ The purpose of this tool is to get all the dependencies for offline installation
 Principle
 ----
 1. apt-get download the package
-2. get all *.debs from /var/cache/apt/archives/, and this debs is all the dependencies of this package. 
+2. get all *.debs from /var/cache/apt/archives/, and this debs is all the dependencies of this package.
 
 Dependencies
 --------
