@@ -1,0 +1,1 @@
+docker build -t ubuntu1604:0.1.0 -f ubuntu16.04.dockerfile .
