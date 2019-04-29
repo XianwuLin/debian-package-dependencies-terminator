@@ -13,7 +13,8 @@ from flask import Flask, jsonify, request, send_file, abort
 app = Flask(__name__)
 port = 8765
 download_folder = "./debs"
-
+if not os.path.exists(download_folder):
+    os.mkdir(download_folder)
 
 def make_tarfile(output_filename, source_dir):
     with tarfile.open(output_filename, "w") as tar:
