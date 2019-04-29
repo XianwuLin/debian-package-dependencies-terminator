@@ -2,37 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Debian包依赖终结者</title>
+    <title>Debian Package Dependencies Terminator</title>
 </head>
 <body>
 <div style="position: absolute;left: 800px;top: 10px;height: 800px;width: 800px;border: 1px;overflow: auto;"><pre id="logs"></pre></div>
-<h1>Debian包依赖终结者</h1>
+<h1>Debian Package Dependencies Terminator</h1>
 <div>
-    <label for="system-version">请选择操作系统</label>
+    <label for="system-version">Please select System</label>
     <select id="system-version">
         <option value="ubuntu 16.04">ubuntu 16.04</option>
     </select>
 </div>
 <br/>
-<label for="input-select">请选择通过安装包获取依赖，还是通过自定义脚本获取依赖</label>
+<label for="input-select">Please choose to get dependencies through the <b>package name</b> or <b>custom scripts</b></label>
 <form id="input-select">
-    <input type="radio" name="command" value="package" checked>安装包
+    <input type="radio" name="command" value="package" checked>Package Name
     <br>
-    <input type="radio" name="command" value="shell">shell脚本
+    <input type="radio" name="command" value="shell">Customer Shell Script
 </form>
 <br/>
 <div id="package-div">
-    <label for="package">请输入安装包</label>
+    <label for="package">Package Name</label>
     <input id="package" type="text" name="package">
 </div>
 <br/>
 <div id="shell-div" hidden>
-    <label for="shell">请输入自定义脚本</label>
+    <label for="shell">Customer Shell Script</label>
     <textarea id="shell" rows="10" cols="80"></textarea>
 </div>
 
 <br/>
-<button id="create">请求依赖包</button>
+<button id="create">REQUEST DEPENDENCIES</button>
 <div id="msg"></div>
 <script src="https://cdn.bootcss.com/jquery/3.4.0/jquery.js"></script>
 <script>
@@ -53,7 +53,7 @@
     $('#create').click(function () {
         if (input_select == "shell") {
             if (!$('#shell').val()) {
-                alert("请输入正确的包");
+                alert("Please input correct shell command");
                 return
             }
             var post_data = {
@@ -62,7 +62,7 @@
             };
         } else {
             if (!$('#package').val()) {
-                alert("请输入正确的shell脚本");
+                alert("Please input correct package name");
                 return
             }
             var post_data = {
@@ -78,7 +78,7 @@
             async: true,
             success: function (data) {
                 task_id = data.result.id;
-                $('#msg').html("请求成功，正在构建依赖包...")
+                $('#msg').html("Request success, please wait...")
                 setTimeout(get_package_status, 1000);
             },
             contentType: "application/json; charset=utf-8",
@@ -96,11 +96,11 @@
         $.getJSON("/api/dpdt/status?id=" + task_id, function (data) {
             if (data.status == 2000) {
                 url = data.result.path;
-                $('#msg').html("构建成功，链接地址：<a href='" + url + "'>TAR包</a>")
+                $('#msg').html("Build Success, and link: <a href='" + url + "'>TAR</a>")
             } else if(data.status == 4001){
                 logs(data.message);
                 $("#logs").html(data.message);
-                $('#msg').html("构建失败，请检查日志")
+                $('#msg').html("Build error, please check the log and try again")
             }
             else {
                 logs(data.result.logs);

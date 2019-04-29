@@ -15,13 +15,11 @@ Dependencies
 --------
 1. python2.7
 2. docker
-3. nginx
 
 Usage
 --------
-0. change some variable in main.py to adapt to your environment
 1. run dockerfiles/createImage.sh to create docker images
 2. run python main.py to start flask server
-3. open http://127.0.0.1:8080/ to use this tool
+3. open http://127.0.0.1:8765/ to use this tool
 4. have fun.
 

@@ -8,12 +8,11 @@ import tarfile
 import tempfile
 
 import docker
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, abort
 
 app = Flask(__name__)
-
-nginx_html_folder = "/opt/html/debs"
-nginx_html_web_prefix = "http://127.0.0.1/debs/"
+port = 8765
+download_folder = "./debs"
 
 
 def make_tarfile(output_filename, source_dir):
@@ -32,10 +31,7 @@ def create():
     req = request.json
     system_version = req["system_version"]
     command = req["command"]
-    print "command"
-    print command
     tmp_folder = tempfile.mkdtemp()
-    print tmp_folder
     os.mkdir(os.path.join(tmp_folder, 'apt'))
 
     with open(os.path.join(tmp_folder, 'main.sh'), "w") as f:
@@ -64,28 +60,41 @@ def status():
                 if item["Destination"] == "/var/cache/apt/archives":
                     local_debs_path = item["Source"]
             if container.attrs["State"]["ExitCode"] != 0:
+                # if return code is not zero, there must be some mistakes in command.
                 result = {"status": 4001, "message": container.logs()}
                 shutil.rmtree(os.path.dirname(local_debs_path))
                 container.remove()
                 return jsonify(result)
             else:
-                # 正常完成，打包目录
+                # create finish, and create tar file
                 if not local_debs_path:
                     return jsonify({"status": 4002, "message": "find debs folder error"})
-                deb_tar_file_path = os.path.join(nginx_html_folder, container_id + ".tar")
+                deb_tar_file_path = os.path.join(download_folder, container_id + ".tar")
                 make_tarfile(deb_tar_file_path, local_debs_path)
-                # 清理环境
+                # clean container and tmp folder
                 shutil.rmtree(os.path.dirname(local_debs_path))
                 container.remove()
                 return jsonify({"status": 2000, "message": "finish",
-                                "result": {"path": nginx_html_web_prefix + container_id + ".tar"}})
+                                "result": {"path": '/api/dpdt/download?id=' + container_id}})
         elif container.status == "dead":
+            # container dead
             return jsonify({"status": 4001, "message": container.logs()})
         else:
+            # container is running and return logs
             return jsonify({"status": 2001, "message": "running", "result": {"logs": container.logs()}})
     except Exception as e:
         logging.exception(e)
         return jsonify({"status": 4000, "message": "id is unvalid"})
+
+
+@app.route('/api/dpdt/download', methods=['GET'])
+def download():
+    container_id = request.args.get('id')
+    deb_tar_file_path = os.path.join(download_folder, container_id + ".tar")
+    if os.path.exists(deb_tar_file_path):
+        return send_file(deb_tar_file_path, as_attachment=True)
+    else:
+        abort(404)
 
 
 @app.route('/', methods=['GET'])
@@ -94,4 +103,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(port=8765, host='0.0.0.0')
+    app.run(port=port, host='0.0.0.0')
